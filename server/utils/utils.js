@@ -74,12 +74,19 @@ const compareAttributes = (refProduct, newProduct) => {
     let keys = Object.keys(weights);
     for (const key of keys) {
         let cosineVal;
-        // console.log(refProduct[key], newProduct[key])
-        if (typeof refProduct[key] === "number") {
-            cosineVal = numberSimilarity(refProduct[key], newProduct[key])
+        if (key === "gender") {
+            let unisex = false;
+            console.log(refProduct[key], newProduct[key])
+            unisex = refProduct[key].match(/unisex/i) || newProduct[key].match(/unisex/i);
+            cosineVal = unisex ? 1 : textCosineSimilarity(refProduct[key], newProduct[key])
         }
         else {
-            cosineVal = textCosineSimilarity(refProduct[key], newProduct[key]);
+            if (typeof refProduct[key] === "number") {
+                cosineVal = numberSimilarity(refProduct[key], newProduct[key])
+            }
+            else {
+                cosineVal = textCosineSimilarity(refProduct[key], newProduct[key]);
+            }
         }
         newProduct.coefficient = newProduct.coefficient + (cosineVal * weights[key])
     }
@@ -104,8 +111,7 @@ const getValue = (field, value, dataInKey) => {
     else {
         val = field.default
     }
-
-    return val +  (dataInKey ? " " : "") + dataInKey;
+    return val + (dataInKey ? " " : "") + dataInKey;
 }
 
 
@@ -137,7 +143,7 @@ const mapProduct = (productX) => {
 const sortProducts = (refProduct, products) => {
     const mappedRef = mapProduct(refProduct);
     let productsWithCoefficients = productSimilarity(mappedRef, products)
-    let sortedArray = productsWithCoefficients.sort((a,b)=> b.coefficient-a.coefficient)
+    let sortedArray = productsWithCoefficients.sort((a, b) => b.coefficient - a.coefficient)
     return sortedArray;
 }
 
