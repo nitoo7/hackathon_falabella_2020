@@ -13,7 +13,7 @@ async function getSku(id) {
     body: {
       "query": {
         "match": {
-          "product_skuId": id
+          "skuid": id
         }
       }
     }
@@ -81,6 +81,7 @@ router.get('/getSimilarProducts/:id', async function (req, res, next) {
       values += skuData[key] ? ` ${skuData[key]}` : ""
     }
     const resultSet = await getResults(attributeList, values, limit);
+    // console.log(resultSet)
     let sortedResults = sortProducts(skuData, resultSet.splice(1));
     sortedResults = sortedResults.map((el) => {
       return {

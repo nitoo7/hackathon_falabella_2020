@@ -1,12 +1,13 @@
 // TODO: Make configurable
 
 const attributes = [
-    "product.parentCategoryNames",
-    "variant.primayColor",
-    "variant.size",
-    "variant.colorGroup",
-    "product.brandName" ,
-    "product.tipo"
+    "category_name*",
+    "gender",
+    "variant_attr_primary_color",
+    "variant_attr_size",
+    "variant_attr_color_group",
+    "brand",
+    "attr_tipo"
 ]
 
 module.exports = {
