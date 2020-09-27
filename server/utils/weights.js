@@ -1,5 +1,3 @@
-// TODO: Make configurable
-
 const weights = {
     name: 20,
     category: 30,

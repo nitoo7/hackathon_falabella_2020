@@ -1,8 +1,23 @@
 const productSchema = {
+    skuId :{
+        type: "string",
+        default: "",
+        mapTo: "product_skuId"
+    },
+    productId: {
+        type: "string",
+        default: "",
+        mapTo: "product.productId"
+    },
     name: {
         type: "string",
         default: "",
         mapTo: "product.name"
+    },
+    merchantId: {
+        type: "string",
+        default: "",
+        mapTo: "product.merchantCategoryId"
     },
     category: {
         type: "string",
@@ -34,6 +49,11 @@ const productSchema = {
         default: "",
         mapTo:"product.attr.top"
     },
+    modelo: {
+        type: "string",
+        default: "",
+        mapTo: "product.modelo"
+    },
     type: {
         type: "string",
         default: "",
@@ -58,6 +78,16 @@ const productSchema = {
         type: "string",
         default: "",
         mapTo: "product.attr.all"
+    },
+    productPhotoUrl : {
+        type: "string",
+        default: "",
+        mapTo: "product.photoUrl"
+    },
+    variantPhotoURL : {
+        type: "string",
+        default: "",
+        mapTo: "variant.photoUrl"
     }
 }
 

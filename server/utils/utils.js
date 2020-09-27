@@ -105,12 +105,18 @@ const getValue = (field, value, dataInKey) => {
         val = field.default
     }
 
-    return val + " " + dataInKey;
+    return val +  (dataInKey ? " " : "") + dataInKey;
 }
 
 
-const mapProduct = (product) => {
+const mapProduct = (productX) => {
     var obj = {};
+    var product;
+    if (productX._source) {
+        product = productX._source
+    }
+    else
+        product = productX
     for (let schemaKey of Object.keys(productSchema)) {
         const field = productSchema[schemaKey]
         var matchingKeys = Object.keys(product).filter(productKey => productKey.match(field.mapTo));
@@ -120,34 +126,32 @@ const mapProduct = (product) => {
             var value = getValue(field, product[matchingKey], dataInKey);
             obj[schemaKey] = obj[schemaKey] ? obj[schemaKey] + " " + value : value
         }
-        if(field.type === "number"){
-            console.log(obj[schemaKey])
+        if (field.type === "number") {
             obj[schemaKey].replace(/\s+/g, "")
             obj[schemaKey] = Number(obj[schemaKey])
         }
     }
-    console.log(obj)
     return obj;
 }
 
 const sortProducts = (refProduct, products) => {
-    console.log(refProduct)
     const mappedRef = mapProduct(refProduct);
     let productsWithCoefficients = productSimilarity(mappedRef, products)
-    return productsWithCoefficients;
+    let sortedArray = productsWithCoefficients.sort((a,b)=> b.coefficient-a.coefficient)
+    return sortedArray;
 }
 
 const getElasticResults = (query) => {
     const client = new Client({ node: 'http://localhost:9200' })
 
     client.search({
-      index: 'test2',
-      body: {
-        ...query 
-      }
+        index: 'test2',
+        body: {
+            ...query
+        }
     }, (err, result) => {
-      if (err) console.log(err)
-      return result
+        if (err) console.log(err)
+        return result
     })
 }
 

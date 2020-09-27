@@ -76,9 +76,8 @@ router.get('/getSimilarProducts/:id', async function (req, res, next) {
       values += skuData[key] ? ` ${skuData[key]}` : ""
     }
     const resultSet = await getResults(attributeList, values);
-    // const sortedResults = sortProducts(selectedProduct, results);
-    res.status(200).send({selectedProduct: skuData, results: resultSet});
-    // res.status(200).send({data: sortProducts});
+    const sortedResults = sortProducts(skuData, resultSet);
+    res.status(200).send({selectedProduct: skuData, results: sortedResults});
   } catch (err) {
     res.status(500).send({ error: "Some error occured" })
     return
