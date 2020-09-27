@@ -17,3 +17,4 @@ npm start
 *Application will be running in 4000 port in local machine.*
 
 
+Sample URL : http://localhost:4000/getSimilarProducts/:id
