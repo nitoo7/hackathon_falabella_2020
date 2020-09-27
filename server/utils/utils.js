@@ -1,5 +1,6 @@
 const { weights } = require("./weights");
-const { productSchema } = require("../schema/product");
+// const { productSchema } = require("../schema/product");
+const { productSchema } = require("../schema/productNew");
 const { Client } = require('@elastic/elasticsearch')
 
 function sanitize(str) {

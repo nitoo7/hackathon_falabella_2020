@@ -3,13 +3,13 @@ var router = express.Router();
 var { sortProducts } = require("../utils/utils");
 const { Client } = require('@elastic/elasticsearch')
 const { attributes } = require("../utils/attributes");
-const {requestSchema} = require("../schema/request");
+const { requestSchema } = require("../schema/request");
 
 const client = new Client({ node: 'http://localhost:9200' })
 
-async function getSku(id){
-   const data = await client.search({
-    index: 'test2',
+async function getSku(id) {
+  const data = await client.search({
+    index: 'heckethon_similar_product',
     body: {
       "query": {
         "match": {
@@ -23,10 +23,10 @@ async function getSku(id){
 
 async function getResults(attributeList, values, limit) {
   const data = await client.search({
-    index: 'test2',
+    index: 'heckethon_similar_product',
     body: {
       "from": 0,
-      "size": limit,
+      "size": limit + 1,
       "query": {
         "bool": {
           "should": [
@@ -66,7 +66,10 @@ router.get('/getSimilarProducts/:id', async function (req, res, next) {
     ]
     const allKeys = Object.keys(skuData);
     for (const key of allKeys) {
-      if (key.startsWith("product.attr.top") || key.startsWith("product.attr.all") ) {
+      if (key.startsWith("attr_to_specification")
+        ||
+        key.startsWith("all_product_attributes")
+      ) {
         attributeList = [
           ...attributeList,
           key
@@ -78,16 +81,17 @@ router.get('/getSimilarProducts/:id', async function (req, res, next) {
       values += skuData[key] ? ` ${skuData[key]}` : ""
     }
     const resultSet = await getResults(attributeList, values, limit);
-    let sortedResults = sortProducts(skuData, resultSet);
+    let sortedResults = sortProducts(skuData, resultSet.splice(1));
     sortedResults = sortedResults.map((el) => {
       return {
         'productId': el['productId'],
         'skuId': el['skuId'],
         'productName': el['name'],
-        'image': el['variantPhotoURL']
+        'image': el['variantPhotoURL'],
+        'coefficient': el['coefficient']
       }
     })
-    res.status(200).send({results: sortedResults});
+    res.status(200).send({ results: sortedResults, attributes: attributeList });
   } catch (err) {
     res.status(500).send({ error: "Some error occured" })
     return
