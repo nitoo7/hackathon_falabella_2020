@@ -60,7 +60,7 @@ router.get('/getSimilarProducts', async function (req, res, next) {
     ]
     const allKeys = Object.keys(skuData);
     for (const key of allKeys) {
-      if (key.startsWith("product.attr.top")) {
+      if (key.startsWith("product.attr.top") || key.startsWith("product.attr.all") ) {
         attributeList = [
           ...attributeList,
           key
@@ -73,7 +73,7 @@ router.get('/getSimilarProducts', async function (req, res, next) {
     }
     const resultSet = await getResults(attributeList, values);
     const sortedResults = sortProducts(selectedProduct, results);
-    res.status(200).send({selectedProduct: attributeList, results: resultSet, values});
+    res.status(200).send({selectedProduct: skuData, results: resultSet});
     // res.status(200).send({data: sortProducts});
   } catch (err) {
     res.status(500).send({ error: "Some error occured" })
