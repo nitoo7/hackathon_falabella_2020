@@ -7,8 +7,8 @@ const { attributes } = require("../utils/attributes");
 
 const client = new Client({ node: 'http://localhost:9200' })
 
-async function getSku(){
-   const data = await client.search({
+async function getSku() {
+  const data = await client.search({
     index: 'test2',
     body: {
       "query": {
@@ -21,39 +21,42 @@ async function getSku(){
   return data.body.hits.hits[0]._source
 }
 
-async function getResults(attributeList, values){
+async function getResults(attributeList, values) {
   const data = await client.search({
-   index: 'test2',
-   body: {
-    "query": {
-      "bool": {
-        "should": [
-          {
-            "multi_match" : {
-              "query": values,
-              "type": "cross_fields",
-              "fields": [
-                ...attributeList
-              ],
-              "minimum_should_match": "50%" 
+    index: 'test2',
+    body: {
+      "query": {
+        "bool": {
+          "should": [
+            {
+              "multi_match": {
+                "query": values,
+                "type": "cross_fields",
+                "fields": [
+                  ...attributeList
+                ],
+                "minimum_should_match": "50%"
+              }
             }
-          }
-        ]
+          ]
+        }
       }
-   }
-  }
- })
- return data.body.hits.hits
+    }
+  })
+  return data.body.hits.hits
 }
 
 router.get('/getSimilarProducts', async function (req, res, next) {
-  //TODO: validate request
+  const { skuId, count = 10 } = req.query;
+  const { error } = requestSchema.validate({ skuId, count })
+  if (error) {
+    res.status(400).send({ error: error })
+    return
+  }
 
   try {
     //TODO: fetch data from elastic and replace sample data
     const { selectedProduct = {}, results = [] } = response
-    
-
     const skuData = await getSku();
     let attributeList = [
       ...attributes
@@ -77,6 +80,7 @@ router.get('/getSimilarProducts', async function (req, res, next) {
     // res.status(200).send({data: sortProducts});
   } catch (err) {
     res.status(500).send({ error: "Some error occured" })
+    return
   }
 
 });
