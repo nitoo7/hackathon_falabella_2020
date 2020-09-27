@@ -1,8 +1,8 @@
-const {weights} = require("./weights");
+const { weights } = require("./weights");
+const { productSchema } = require("../schema/product");
 
 function sanitize(str) {
-    //TODO: sanitize the string
-    return str
+    return str.replace(/[^a-z][^aábcdeéfghijklmnñoópqrstuúüvwxyzAÁBCDEÉFGHIJKLMNÑOÓPQRSTUÚÜVWXYZ]/gi, " ").replace(/\s+/g, " ")
 }
 
 function termFreqMap(str) {
@@ -88,15 +88,51 @@ const compareAttributes = (refProduct, newProduct) => {
 const productSimilarity = (refProduct, products) => {
     var newProducts = [];
     for (let product of products) {
-        let newProduct = { ...product };
+        let newProduct = mapProduct(product);
         newProduct = compareAttributes(refProduct, newProduct);
         newProducts = [...newProducts, newProduct]
     }
     return newProducts;
 }
 
+const getValue = (field, value, dataInKey) => {
+    var val = "";
+    if (value) {
+        val = value;
+    }
+    else {
+        val = field.default
+    }
+
+    return val + " " + dataInKey;
+}
+
+
+const mapProduct = (product) => {
+    var obj = {};
+    for (let schemaKey of Object.keys(productSchema)) {
+        const field = productSchema[schemaKey]
+        var matchingKeys = Object.keys(product).filter(productKey => productKey.match(field.mapTo));
+        for (let matchingKey of matchingKeys) {
+            var dataInKey = matchingKey.split(field.mapTo)[1]
+            dataInKey = dataInKey.length ? dataInKey.slice(1) : ""
+            var value = getValue(field, product[matchingKey], dataInKey);
+            obj[schemaKey] = obj[schemaKey] ? obj[schemaKey] + " " + value : value
+        }
+        if(field.type === "number"){
+            console.log(obj[schemaKey])
+            obj[schemaKey].replace(/\s+/g, "")
+            obj[schemaKey] = Number(obj[schemaKey])
+        }
+    }
+    console.log(obj)
+    return obj;
+}
+
 const sortProducts = (refProduct, products) => {
-    var productsWithCoefficients = productSimilarity(refProduct, products)
+    console.log(refProduct)
+    const mappedRef = mapProduct(refProduct);
+    var productsWithCoefficients = productSimilarity(mappedRef, products)
     return productsWithCoefficients;
 }
 
