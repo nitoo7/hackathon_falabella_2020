@@ -1,19 +1,19 @@
 var express = require('express');
 var router = express.Router();
 var { sortProducts } = require("../utils/utils");
-var { response } = require("../data/sampleData");
 const { Client } = require('@elastic/elasticsearch')
 const { attributes } = require("../utils/attributes");
+const {requestSchema} = require("../schema/request");
 
 const client = new Client({ node: 'http://localhost:9200' })
 
-async function getSku() {
-  const data = await client.search({
+async function getSku(id){
+   const data = await client.search({
     index: 'test2',
     body: {
       "query": {
         "match": {
-          "product_skuId": "881886505"
+          "product_skuId": id
         }
       }
     }
@@ -46,8 +46,11 @@ async function getResults(attributeList, values) {
   return data.body.hits.hits
 }
 
-router.get('/getSimilarProducts', async function (req, res, next) {
-  const { skuId, count = 10 } = req.query;
+router.get('/getSimilarProducts/:id', async function (req, res, next) {
+  //TODO: validate request
+
+  const { count = 10 } = req.query;
+  const skuId = req.params.id;
   const { error } = requestSchema.validate({ skuId, count })
   if (error) {
     res.status(400).send({ error: error })
@@ -55,15 +58,13 @@ router.get('/getSimilarProducts', async function (req, res, next) {
   }
 
   try {
-    //TODO: fetch data from elastic and replace sample data
-    const { selectedProduct = {}, results = [] } = response
-    const skuData = await getSku();
+    const skuData = await getSku(skuId);
     let attributeList = [
       ...attributes
     ]
     const allKeys = Object.keys(skuData);
     for (const key of allKeys) {
-      if (key.startsWith("product.attr.top")) {
+      if (key.startsWith("product.attr.top") || key.startsWith("product.attr.all") ) {
         attributeList = [
           ...attributeList,
           key
@@ -75,8 +76,8 @@ router.get('/getSimilarProducts', async function (req, res, next) {
       values += skuData[key] ? ` ${skuData[key]}` : ""
     }
     const resultSet = await getResults(attributeList, values);
-    const sortedResults = sortProducts(selectedProduct, results);
-    res.status(200).send({ selectedProduct: attributeList, results: resultSet, values });
+    // const sortedResults = sortProducts(skuData, resultSet);
+    res.status(200).send({selectedProduct: skuData, results: resultSet});
     // res.status(200).send({data: sortProducts});
   } catch (err) {
     res.status(500).send({ error: "Some error occured" })
