@@ -13,7 +13,7 @@ async function getSku(id) {
     body: {
       "query": {
         "match": {
-          "skuid": id
+          "productId": id
         }
       }
     }
@@ -92,6 +92,7 @@ router.get('/getSimilarProducts/:id', async function (req, res, next) {
         'coefficient': el['coefficient']
       }
     })
+    sortedResults = sortedResults.filter(p => p.productId!==skuData["productId"])
     res.status(200).send({ results: sortedResults, attributes: attributeList });
   } catch (err) {
     res.status(500).send({ error: "Some error occured" })
