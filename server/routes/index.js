@@ -21,10 +21,12 @@ async function getSku(id){
   return data.body.hits.hits[0]._source
 }
 
-async function getResults(attributeList, values) {
+async function getResults(attributeList, values, limit) {
   const data = await client.search({
     index: 'test2',
     body: {
+      "from": 0,
+      "size": limit,
       "query": {
         "bool": {
           "should": [
@@ -51,6 +53,8 @@ router.get('/getSimilarProducts/:id', async function (req, res, next) {
 
   const { count = 10 } = req.query;
   const skuId = req.params.id;
+  let limit = parseInt(req.query.size)
+  limit = isNaN(limit) ? 10 : parseInt(limit)
   const { error } = requestSchema.validate({ skuId, count })
   if (error) {
     res.status(400).send({ error: error })
@@ -75,7 +79,7 @@ router.get('/getSimilarProducts/:id', async function (req, res, next) {
     for (const key of attributeList) {
       values += skuData[key] ? ` ${skuData[key]}` : ""
     }
-    const resultSet = await getResults(attributeList, values);
+    const resultSet = await getResults(attributeList, values, limit);
     const sortedResults = sortProducts(skuData, resultSet);
     res.status(200).send({selectedProduct: skuData, results: sortedResults});
   } catch (err) {
