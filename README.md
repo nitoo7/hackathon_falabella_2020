@@ -13,7 +13,6 @@
 cd server
 npm install
 npm start
-
 ```
 *Application will be running in 4000 port in local machine.*
 
