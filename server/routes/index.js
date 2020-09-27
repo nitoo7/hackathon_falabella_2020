@@ -7,7 +7,7 @@ const { Client } = require('@elastic/elasticsearch')
 const client = new Client({ node: 'http://localhost:9200' })
 
 async function getSku(){
-  client.search({
+   const data = await client.search({
     index: 'test2',
     body: {
       "query": {
@@ -16,10 +16,33 @@ async function getSku(){
         }
       }
     }
-  }, (err, result) => {
-    if (err) console.log(err)
-    return result;
   })
+  return data.body.hits.hits[0]._source
+}
+
+async function getResults(){
+  const data = await client.search({
+   index: 'test2',
+   body: {
+    "query": {
+      "bool": {
+        "should": [
+          {
+            "multi_match" : {
+              "query":      "Medio Pantalones de pijama\"",
+              "type":       "cross_fields",
+              "fields":     [
+                "product.parentCategoryNames"
+              ],
+              "minimum_should_match": "50%" 
+            }
+          }
+        ]
+      }
+   }
+  }
+ })
+ return data.body.hits.hits
 }
 
 router.get('/getSimilarProducts', async function (req, res, next) {
@@ -28,11 +51,14 @@ router.get('/getSimilarProducts', async function (req, res, next) {
   try {
     //TODO: fetch data from elastic and replace sample data
     const { selectedProduct = {}, results = [] } = response
-    // const sortedResults = sortProducts(selectedProduct, results)
+    
 
     const skuData = await getSku();
-    res.send(skuData);
-    
+    const resultSet = await getResults();
+    console.log(resultSet)
+    const sortedResults = sortProducts(selectedProduct, results);
+    res.status(200).send({selectedProduct: skuData, results: resultSet});
+    // res.status(200).send({data: sortProducts});
   } catch (err) {
     res.status(500).send({ error: "Some error occured" })
   }
