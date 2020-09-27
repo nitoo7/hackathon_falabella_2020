@@ -1,19 +1,18 @@
 var express = require('express');
 var router = express.Router();
 var { sortProducts } = require("../utils/utils");
-var { response } = require("../data/sampleData");
 const { Client } = require('@elastic/elasticsearch')
 const { attributes } = require("../utils/attributes");
 
 const client = new Client({ node: 'http://localhost:9200' })
 
-async function getSku(){
+async function getSku(id){
    const data = await client.search({
     index: 'test2',
     body: {
       "query": {
         "match": {
-          "product_skuId": "881886505"
+          "product_skuId": id
         }
       }
     }
@@ -46,15 +45,11 @@ async function getResults(attributeList, values){
  return data.body.hits.hits
 }
 
-router.get('/getSimilarProducts', async function (req, res, next) {
+router.get('/getSimilarProducts/:id', async function (req, res, next) {
   //TODO: validate request
 
   try {
-    //TODO: fetch data from elastic and replace sample data
-    const { selectedProduct = {}, results = [] } = response
-    
-
-    const skuData = await getSku();
+    const skuData = await getSku(req.params.id);
     let attributeList = [
       ...attributes
     ]
@@ -72,7 +67,7 @@ router.get('/getSimilarProducts', async function (req, res, next) {
       values += skuData[key] ? ` ${skuData[key]}` : ""
     }
     const resultSet = await getResults(attributeList, values);
-    const sortedResults = sortProducts(selectedProduct, results);
+    // const sortedResults = sortProducts(skuData, resultSet);
     res.status(200).send({selectedProduct: skuData, results: resultSet});
     // res.status(200).send({data: sortProducts});
   } catch (err) {
