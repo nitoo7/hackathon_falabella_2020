@@ -1,4 +1,5 @@
 const {weights} = require("./weights");
+const { Client } = require('@elastic/elasticsearch')
 
 function sanitize(str) {
     //TODO: sanitize the string
@@ -72,7 +73,7 @@ const compareAttributes = (refProduct, newProduct) => {
     newProduct.coefficient = 0;
     let keys = Object.keys(weights);
     for (const key of keys) {
-        var cosineVal;
+        let cosineVal;
         // console.log(refProduct[key], newProduct[key])
         if (typeof refProduct[key] === "number") {
             cosineVal = numberSimilarity(refProduct[key], newProduct[key])
@@ -86,7 +87,7 @@ const compareAttributes = (refProduct, newProduct) => {
 }
 
 const productSimilarity = (refProduct, products) => {
-    var newProducts = [];
+    let newProducts = [];
     for (let product of products) {
         let newProduct = { ...product };
         newProduct = compareAttributes(refProduct, newProduct);
@@ -96,8 +97,22 @@ const productSimilarity = (refProduct, products) => {
 }
 
 const sortProducts = (refProduct, products) => {
-    var productsWithCoefficients = productSimilarity(refProduct, products)
+    let productsWithCoefficients = productSimilarity(refProduct, products)
     return productsWithCoefficients;
+}
+
+const getElasticResults = (query) => {
+    const client = new Client({ node: 'http://localhost:9200' })
+
+    client.search({
+      index: 'test2',
+      body: {
+        ...query 
+      }
+    }, (err, result) => {
+      if (err) console.log(err)
+      return result
+    })
 }
 
 module.exports = {
