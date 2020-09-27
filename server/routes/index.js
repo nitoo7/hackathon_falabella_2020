@@ -49,13 +49,11 @@ async function getResults(attributeList, values, limit) {
 }
 
 router.get('/getSimilarProducts/:id', async function (req, res, next) {
-  //TODO: validate request
 
-  const { count = 10 } = req.query;
   const skuId = req.params.id;
   let limit = parseInt(req.query.size)
   limit = isNaN(limit) ? 10 : parseInt(limit)
-  const { error } = requestSchema.validate({ skuId, count })
+  const { error } = requestSchema.validate({ skuId })
   if (error) {
     res.status(400).send({ error: error })
     return
