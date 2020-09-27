@@ -26,7 +26,7 @@ async function getResults(attributeList, values, limit) {
     index: 'test2',
     body: {
       "from": 0,
-      "size": limit,
+      "size": limit + 1,
       "query": {
         "bool": {
           "should": [
@@ -78,13 +78,14 @@ router.get('/getSimilarProducts/:id', async function (req, res, next) {
       values += skuData[key] ? ` ${skuData[key]}` : ""
     }
     const resultSet = await getResults(attributeList, values, limit);
-    let sortedResults = sortProducts(skuData, resultSet);
+    let sortedResults = sortProducts(skuData, resultSet.splice(1));
     sortedResults = sortedResults.map((el) => {
       return {
         'productId': el['productId'],
         'skuId': el['skuId'],
         'productName': el['name'],
-        'image': el['variantPhotoURL']
+        'image': el['variantPhotoURL'],
+        'coefficient': el['coefficient']
       }
     })
     res.status(200).send({results: sortedResults});

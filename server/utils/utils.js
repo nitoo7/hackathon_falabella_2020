@@ -76,7 +76,6 @@ const compareAttributes = (refProduct, newProduct) => {
         let cosineVal;
         if (key === "gender") {
             let unisex = false;
-            console.log(refProduct[key], newProduct[key])
             unisex = refProduct[key].match(/unisex/i) || newProduct[key].match(/unisex/i);
             cosineVal = unisex ? 1 : textCosineSimilarity(refProduct[key], newProduct[key])
         }
